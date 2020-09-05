@@ -35,14 +35,11 @@ namespace Devboost.DroneDelivery.DomainService
         private async Task<ConsultaDronePedidoDTO> RetornConsultaDronePedido(DroneEntity drone)
         {
             
-            var pedido = await _pedidosRepository.GetByDroneID(drone.Id);
-            var idPedido = pedido == null ? (Guid?) null : pedido.Id;
             return new ConsultaDronePedidoDTO
             {
 
                 IdDrone = drone.Id,
-                Situacao = drone.Status.ToString(),
-                PedidoId = idPedido
+                Situacao = drone.Status.ToString()
             };
         }
         
@@ -51,7 +48,7 @@ namespace Devboost.DroneDelivery.DomainService
             var listaDrones = await _dronesRepository.GetAll();
 
             AtualizaStatusDrones(listaDrones);
-            var drones = await _dronesRepository.GetByStatus(DroneStatus.Pronto.ToString());
+            var drones = await _dronesRepository.GetByStatus(DroneStatus.Pronto);
             return drones.Count > 0 ? drones[0] : null;
         }
 
@@ -74,14 +71,13 @@ namespace Devboost.DroneDelivery.DomainService
                 case DroneStatus.Pronto:
                     break;
                 case DroneStatus.EmTransito:
-                    var pedido = await _pedidosRepository.GetByDroneID(drone.Id);
+                    
                     if (total > drone.AUTONOMIA_RECARGA)
                     {
                         drone.Status = DroneStatus.Pronto;
                         drone.DataAtualizacao = DateTime.Now;
                         await _dronesRepository.Atualizar(drone);
-                        pedido.Status = PedidoStatus.Entregue;
-                        await _pedidosRepository.Atualizar(pedido);
+                       
                     }
 
                     if (total > drone.AUTONOMIA_MAXIMA)
@@ -89,8 +85,7 @@ namespace Devboost.DroneDelivery.DomainService
                         drone.Status = DroneStatus.Carregando;
                         drone.DataAtualizacao = DateTime.Now;
                         await  _dronesRepository.Atualizar(drone);
-                        pedido.Status = PedidoStatus.Entregue;
-                        await _pedidosRepository.Atualizar(pedido);
+                      
                     }
                     
                     break;

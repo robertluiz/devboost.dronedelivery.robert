@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
+using Devboost.DroneDelivery.Domain.DTOs;
 using Devboost.DroneDelivery.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +21,9 @@ namespace Devboost.DroneDelivery.Api.Controllers
         }
 
         [HttpGet("situacao")]
+        [ProducesResponseType(typeof(List<ConsultaDronePedidoDTO>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult>  SituacaoDrone()
         {
             try

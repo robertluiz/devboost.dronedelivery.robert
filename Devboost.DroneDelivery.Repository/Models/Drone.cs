@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using Devboost.DroneDelivery.Domain.Enums;
+using ServiceStack.DataAnnotations;
 
 namespace Devboost.DroneDelivery.Repository.Models
 {
@@ -13,11 +15,20 @@ namespace Devboost.DroneDelivery.Repository.Models
         }
 
         public Guid Id { get; set; }
-        public int Capacidade { get; set; }
-        public int Velocidade { get; set; }
-        public int Autonomia { get; set; }
-        public string Status { get; set; }
-        public int Carga { get; set; }
+        public DroneStatus Status { get; set; }
+        
+        [Alias("Capacidade")]
+        public int CapacidadeGamas { get; set; }
+        
+        [Alias("Velocidade")]
+        public int VelocidadeKmH { get; set; }
+        
+        [Alias("Autonomia")]
+        public int AutonomiaMinitos { get; set; }
+        
+        [Alias("Carga")]
+        public int CargaGramas { get; set; }
+        
         public DateTime DataAtualizacao { get; set; }
     }
 }

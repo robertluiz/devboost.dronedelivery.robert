@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Devboost.DroneDelivery.Domain.Entities;
 using Devboost.DroneDelivery.Domain.Enums;
@@ -10,53 +11,54 @@ namespace Devboost.DroneDelivery.DomainService
 {
     public class PedidoService: IPedidoService
     {
-        private readonly IDroneService _droneService;
         private readonly IPedidosRepository _pedidosRepository;
+        private readonly IViagemService _viagemService;
 
-        public PedidoService(IDroneService droneService, IPedidosRepository pedidosRepository)
+        public PedidoService( IPedidosRepository pedidosRepository, IViagemService viagemService)
         {
-            _droneService = droneService;
             _pedidosRepository = pedidosRepository;
+            _viagemService = viagemService;
         }
 
         public async Task<bool> InserirPedido(PedidoParam pedido)
         {
-            var novoPedido = new PedidoEntity
+            if (!ValidaPedido(pedido, out var novoPedido, out var distancia)) return false;
+
+            if (await SelecionaDroneInserirPedido(novoPedido)) return true;
+
+            return true;
+        }
+
+        private async Task<bool> SelecionaDroneInserirPedido(PedidoEntity novoPedido)
+        {
+            return true;
+        }
+
+        private static bool ValidaPedido(PedidoParam pedido, out PedidoEntity novoPedido, out double distancia)
+        {
+            novoPedido = new PedidoEntity
             {
                 PesoGramas = pedido.Peso,
                 Latitude = pedido.Latitude,
                 Longitude = pedido.Longitude,
                 DataHora = pedido.DataHora,
-                };
-            
+            };
+
             //calculoDistancia
 
-            var distancia = GeolocalizacaoService.CalcularDistanciaEmMetro(pedido.Latitude,pedido.Longitude);
-            
+            distancia = GeolocalizacaoService.CalcularDistanciaEmMetro(pedido.Latitude, pedido.Longitude);
+
             if (!novoPedido.ValidaPedido(distancia))
                 return false;
-
-            var drone = await _droneService.SelecionarDrone();
-            if (drone == null)
-            {
-                novoPedido.Status = PedidoStatus.PendenteEntrega;
-                await _pedidosRepository.Inserir(novoPedido);
-                return true;
-            }
-                
-            novoPedido.Drone = drone;
-            novoPedido.DroneId = drone.Id;
-            novoPedido.Status = PedidoStatus.EmTransito;
-           await _pedidosRepository.Inserir(novoPedido);
-            await _droneService.AtualizaDrone(drone);
-            
-           return true;
+            return true;
         }
 
-        public async Task<PedidoEntity> PedidoPorIdDrone(Guid droneId)
+        public async Task<bool> InserirPedidos(List<PedidoParam> pedidos)
         {
-          return  await _pedidosRepository.GetByDroneID(droneId);
+           
+            return await _viagemService.ProcessarViagem(novoPedido);
         }
+        
 
         public async Task AtualizaPedido(PedidoEntity pedido)
         {

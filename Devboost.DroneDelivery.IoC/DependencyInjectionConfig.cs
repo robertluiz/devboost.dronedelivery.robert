@@ -13,8 +13,10 @@ namespace Devboost.DroneDelivery.IoC
         {
             services.AddSingleton(config);
             services.AddScoped<IDronesRepository, DronesRepository>(); 
+            services.AddScoped<IViagemRepository, ViagemRepository>(); 
             services.AddScoped<IPedidosRepository, PedidosRepository>();
             services.AddScoped<IDroneService, DroneService>();
+            services.AddScoped<IViagemService, ViagemService>();
             services.AddScoped<IPedidoService, PedidoService>();
             return services;
         }

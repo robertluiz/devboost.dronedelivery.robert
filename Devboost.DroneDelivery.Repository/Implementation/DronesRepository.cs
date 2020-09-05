@@ -1,140 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Devboost.DroneDelivery.Domain.Entities;
 using Devboost.DroneDelivery.Domain.Enums;
 using Devboost.DroneDelivery.Domain.Interfaces.Repository;
 using Devboost.DroneDelivery.Repository.Models;
+using Devboost.DroneDelivery.Repository.Utils;
 using Microsoft.Extensions.Configuration;
 using ServiceStack;
-using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
 namespace Devboost.DroneDelivery.Repository.Implementation
 {
-    public class DronesRepository : IDronesRepository
+    public class DronesRepository : RepositoryBase<Drone,DroneEntity>, IDronesRepository
     {
-        private readonly string _configConnectionString = "DroneDelivery";
-        private readonly IDbConnectionFactoryExtended _dbFactory; 
-        
-        public DronesRepository(IConfiguration config)
+        public DronesRepository(IConfiguration config) : base(config)
         {
-            _dbFactory = new OrmLiteConnectionFactory(
-                config.GetConnectionString(_configConnectionString),  
-                SqlServerDialect.Provider);
-        }
-
-        public async Task<List<DroneEntity>> GetAll()
-        {
-            using var conexao= await _dbFactory.OpenAsync();
-            if (conexao.CreateTableIfNotExists<Drone>())
-            {
-                await conexao.InsertAllAsync(SeedDrone());
-            }
-            var list = await conexao.SelectAsync<Drone>();
-                
-            return list.ConvertTo<List<DroneEntity>>();
-        }
-
-        public async Task<List<DroneEntity>> GetByStatus(string status)
-        {
-            using var conexao = await _dbFactory.OpenAsync();
-            conexao.CreateTableIfNotExists<Drone>();
-            
-            var list = await conexao.SelectAsync<Drone>(d => d.Status == status);
-            return list.ConvertTo<List<DroneEntity>>();
-        }
-
-        public async Task Atualizar(DroneEntity drone)
-        {
-            var model = drone.ConvertTo<Drone>();
-            using var conexao = await _dbFactory.OpenAsync();
-            
-            conexao.CreateTableIfNotExists<Drone>();
-            await conexao.UpdateAsync(model);
-            
-        }
-
-        public async Task Incluir(DroneEntity drone)
-        {
-            var model = drone.ConvertTo<Drone>();
-            using var conexao=  await _dbFactory.OpenAsync();
-            
-            conexao.CreateTableIfNotExists<Drone>();
-            await conexao.InsertAsync(model);
         }
         
+   
 
-        private static List<Drone> SeedDrone()
+        public async Task<List<DroneEntity>> GetByStatus(DroneStatus status)
         {
-
-            return new List<Drone>{
-                new Drone
-                {
-                    Id = Guid.NewGuid(),
-                    Status = DroneStatus.Pronto.ToString(),
-                    Autonomia = 35,
-                    Capacidade = 12000,
-                    Velocidade = 60,
-                    DataAtualizacao = DateTime.Now
-                },
-                new Drone
-                {
-                    Id = Guid.NewGuid(),
-                    Status = DroneStatus.Pronto.ToString(),
-                    Autonomia = 35,
-                    Capacidade = 12000,
-                    Velocidade = 60,
-                    DataAtualizacao = DateTime.Now
-                },
-                new Drone
-                {
-                    Id = Guid.NewGuid(),
-                    Status = DroneStatus.Pronto.ToString(),
-                    Autonomia = 35,
-                    Capacidade = 12000,
-                    Velocidade = 60,
-                    DataAtualizacao = DateTime.Now
-                },
-                new Drone
-                {
-                    Id = Guid.NewGuid(),
-                    Status = DroneStatus.Pronto.ToString(),
-                    Autonomia = 35,
-                    Capacidade = 12000,
-                    Velocidade = 60,
-                    DataAtualizacao = DateTime.Now
-                },
-                new Drone
-                {
-                    Id = Guid.NewGuid(),
-                    Status = DroneStatus.Pronto.ToString(),
-                    Autonomia = 35,
-                    Capacidade = 12000,
-                    Velocidade = 60,
-                    DataAtualizacao = DateTime.Now
-                },
-                new Drone
-                {
-                    Id = Guid.NewGuid(),
-                    Status = DroneStatus.Pronto.ToString(),
-                    Autonomia = 35,
-                    Capacidade = 12000,
-                    Velocidade = 60,
-                    DataAtualizacao = DateTime.Now
-                },
-                new Drone
-                {
-                    Id = Guid.NewGuid(),
-                    Status = DroneStatus.Pronto.ToString(),
-                    Autonomia = 35,
-                    Capacidade = 12000,
-                    Velocidade = 60,
-                    DataAtualizacao = DateTime.Now
-                },
-            };
-
+            using var conn = await DbFactory.OpenAsync();
+            await conn.CheckBase();
+            
+            var list = await conn.SelectAsync<Drone>(d => d.Status == status);
+            return list.ConvertTo<List<DroneEntity>>();
         }
         
     }
